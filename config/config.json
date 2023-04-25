@@ -13,10 +13,10 @@
         }
     },
     "test": {
-        "username": "root",
-        "password": null,
-        "database": "database_test",
-        "host": "127.0.0.1",
+        "username": "u586670680_practils",
+        "password": "Practils@123",
+        "database": "u586670680_practils",
+        "host": "217.21.90.16",
         "dialect": "mysql",
         "timezone": "+05:30",
         "dialectOptions": {
