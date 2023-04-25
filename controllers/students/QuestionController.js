@@ -1,0 +1,157 @@
+const { User,Game,Level,Question,Clue, StudentAnswer } = require("@models");
+const createError = require("http-errors");
+const Helper = require("@utils/helper");
+const { encrypt, decrypt } = require("@utils/crypto");
+const DateTimeHelper = require("@utils/date_time_helper");
+const { studentAnswerSchema } = require("@validation-schemas/QuestionSchema");
+const Op = require('sequelize').Op;
+class QuestionController {
+    
+    /**
+    * Question game
+    * @param {*} req
+    * @param {*} res
+    * @param {*} next
+    */
+    static questions = async (req, res, next) => {
+        try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
+            const answered_questions = await StudentAnswer.findAll({ user_id: user_id });
+            
+            /**
+            * TODO:find answered questions id 
+            */
+            
+            let aId = []
+            answered_questions.forEach(element => {
+                aId.push(element.question_id );
+            }); 
+            
+            const question = await Question.findOne({
+                where: { id: { [Op.notIn]: aId } },
+                include: [
+                    {
+                        model: Game,
+                        as: "game",
+                        attributes: ["id", "title"]
+                    },
+
+                    {
+                        model: Level,
+                        as: "level",
+                        attributes: ["id", "level_type"]
+                    },
+                    {
+                        model: Clue,
+                        as: "clues",
+                        attributes: ["id","clue"]
+                    },
+                ],
+                attributes: ["id","question"]
+            });
+            const level_id = question.level.id;
+
+        
+           
+
+            /**
+         * calculate level percentage
+         */
+            const totalAnswered = await StudentAnswer.count({ user_id: user_id, level_id: level_id });
+            const totalQuestion = await Question.count({ level_id: level_id });
+            const total = totalQuestion + 1;
+            const level_percentage_value = (totalAnswered / total) * 100;
+            const level_percentage = level_percentage_value.toFixed(2);
+
+            const data = {
+                id: encrypt(question.id),
+                question: question.question,
+                level_percentage: level_percentage,
+                level: {
+                    id: encrypt(question.level.id),
+                    level_type: question.level.level_type
+                },
+                clues:[],
+                game: {
+                    id: encrypt(question.game.id),
+                    title: question.game.title,
+                }
+            }
+            question.clues.forEach((result) => {
+                data.clues.push({
+                    id: encrypt(result.id),
+                    clue: result.clue
+                })
+            });
+            res.json(Helper.successResponse(data, "success"));
+        } catch (error) {
+            if (error.isJoi == true) error.status = 422;
+            next(error);
+        }
+    };
+    
+    /**
+    * answer
+    * @param {*} req
+    * @param {*} res
+    * @param {*} next
+    */
+    static storeStudentAnswer = async (req, res, next) => {
+        try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
+            
+            const result = await studentAnswerSchema.validateAsync(req.body);
+            
+            const game_id = decrypt(result.game_id);
+            const level_id = decrypt(result.level_id);
+            const question_id = decrypt(result.question_id);
+            
+            const doesExist = await StudentAnswer.findOne({ where: { user_id: user_id, game_id: game_id, level_id: level_id, question_id: question_id } });
+            if (doesExist) throw createError.Conflict(`You already answer this question`);
+            
+            
+            const questionCheck = await Question.findOne({ where: { id: question_id } });
+            if (!questionCheck) throw createError.Conflict(`Invalid question`);
+            
+            const answerCheck = await Question.findOne({ where: { id: question_id, answer: result.answer } });
+            
+            const is_correct = answerCheck ? 1 : 0;
+            const message = answerCheck ? 'Yaass! You’re Right' : 'Oh no! That’s Wrong';
+            const answer = await StudentAnswer.create({
+                user_id: user_id,
+                game_id: game_id,
+                level_id: level_id,
+                question_id: question_id,
+                answer: result.answer,
+                is_correct: is_correct,
+            });
+            
+            if (!answer) throw createError.InternalServerError();
+
+            /**
+           * store student points
+           */
+                var percentage_type = 'Game';
+                var activity_type = 'App';
+                await Helper.studentActivityPoints(user_id, percentage_type, activity_type);
+            
+            res.status(201).json(
+                Helper.successResponse(questionCheck.answer, message)
+                );
+            } catch (error) {
+                if (error.isJoi == true) error.status = 422;
+                next(error);
+            }
+        };
+        
+        
+        
+        
+        
+    }
+    
+    // Export this module
+    module.exports = QuestionController;
+    
