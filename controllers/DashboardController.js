@@ -29,7 +29,7 @@ class DashboardController {
                                 attributes: ["school_name"],
                             },
                         ],
-                        attributes: ["profile_image","level", "name","grad"],
+                        attributes: ["profile_image", "level", "name", "grad","reward_points"],
                     },
                 ],
             });
