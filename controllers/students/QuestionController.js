@@ -17,8 +17,8 @@ class QuestionController {
         try {
             const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
             const user_id = decrypt(token_info.audience);
-            const answered_questions = await StudentAnswer.findAll({ user_id: user_id });
-            
+            const answered_questions = await StudentAnswer.findAll({ where: { user_id: user_id } });
+            console.log(answered_questions);
             /**
             * TODO:find answered questions id 
             */
@@ -27,7 +27,7 @@ class QuestionController {
             answered_questions.forEach(element => {
                 aId.push(element.question_id );
             }); 
-            
+            console.log(aId);
             const question = await Question.findOne({
                 where: { id: { [Op.notIn]: aId } },
                 include: [
@@ -36,7 +36,7 @@ class QuestionController {
                         as: "game",
                         attributes: ["id", "title"]
                     },
-
+                    
                     {
                         model: Level,
                         as: "level",
@@ -48,26 +48,39 @@ class QuestionController {
                         attributes: ["id","clue"]
                     },
                 ],
+                order: [
+                    ['level_id', 'ASC'],
+                ],
                 attributes: ["id","question"]
             });
             const level_id = question.level.id;
-
-        
-           
-
+            
+            
+            
+            
             /**
-         * calculate level percentage
-         */
-            const totalAnswered = await StudentAnswer.count({ user_id: user_id, level_id: level_id });
-            const totalQuestion = await Question.count({ level_id: level_id });
-            const total = totalQuestion + 1;
-            const level_percentage_value = (totalAnswered / total) * 100;
+            * calculate level percentage
+            */
+            const totalLevelAnswered = await StudentAnswer.count({ where: { user_id: user_id, level_id: level_id } });
+            const totalLevelQuestion = await Question.count({ where: { level_id: level_id } });
+            const calc_percentage = 100 / totalLevelQuestion;
+            const level_percentage_value = (totalLevelAnswered + 1)* calc_percentage;
             const level_percentage = level_percentage_value.toFixed(2);
 
+
+
+            /**
+            * calculate game complete or not
+            */
+            const totalAnswered = await StudentAnswer.count({ where: { user_id: user_id} });
+            const totalQuestion = await Question.count();
+            const is_completed = totalQuestion == totalAnswered ? true : false;
+            
             const data = {
                 id: encrypt(question.id),
                 question: question.question,
                 level_percentage: level_percentage,
+                is_completed: is_completed,
                 level: {
                     id: encrypt(question.level.id),
                     level_type: question.level.level_type
@@ -129,13 +142,13 @@ class QuestionController {
             });
             
             if (!answer) throw createError.InternalServerError();
-
+            
             /**
-           * store student points
-           */
-                var percentage_type = 'Game';
-                var activity_type = 'App';
-                await Helper.studentActivityPoints(user_id, percentage_type, activity_type);
+            * store student points
+            */
+            var percentage_type = 'Game';
+            var activity_type = 'App';
+            await Helper.studentActivityPoints(user_id, percentage_type, activity_type);
             
             res.status(201).json(
                 Helper.successResponse(questionCheck.answer, message)

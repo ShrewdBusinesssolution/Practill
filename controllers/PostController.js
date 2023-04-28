@@ -874,7 +874,7 @@ class PostController {
                         
                         const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
                         const user_id = decrypt(token_info.audience);
-                        const post_id = decrypt(req.body.post_id);
+                        const post_id = decrypt(req.body.notifiable_id);
                         
                         var postData = await Post.findAll({
                             where: {

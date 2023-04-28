@@ -10,6 +10,8 @@ const { verifyAccessToken } = require("@middlewares/JwtVerification");
 const AuthRoutes = require("./AuthRoutes");
 const UserRoutes = require("./UserRoutes");
 const StudentRoutes = require("./StudentRoutes");
+const CoachRoutes = require("./CoachRoutes");
+
 
 
 // END APPLICATION ROUTES
@@ -23,6 +25,8 @@ router.get("/",async (req, res) => {
 router.use("/auth", AuthRoutes);
 router.use("/user", UserRoutes);
 router.use("/student", verifyAccessToken, StudentRoutes);
+router.use("/coach", verifyAccessToken, CoachRoutes);
+
 
 
 
