@@ -389,6 +389,7 @@ class PostController {
                                 club_name: club.club_name,
                                 club_image: club.imageUrl(club.club_image),
                                 club_description: club.club_description,
+                                color: record.color,
                                 joined_count: club.club_joined_users.length,
                                 posts:[]
                             }

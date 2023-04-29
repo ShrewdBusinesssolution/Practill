@@ -94,6 +94,7 @@ class ClubController {
                     club_name: record.club_name,
                     club_image: record.imageUrl(record.club_image),
                     club_description: record.club_description,
+                    color: record.color
                 });
             });
 
@@ -169,6 +170,7 @@ class ClubController {
                     club_name: record.clubs.club_name,
                     club_image: record.clubs.imageUrl(record.clubs.club_image),
                     club_description: record.clubs.club_description,
+                    color: record.clubs.color
                 });
             });
 

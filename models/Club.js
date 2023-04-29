@@ -47,6 +47,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             club_name: DataTypes.STRING,
             club_description: DataTypes.STRING,
+            color: DataTypes.STRING,
             status: DataTypes.INTEGER,
 
         },
