@@ -27,7 +27,6 @@ class QuestionController {
             answered_questions.forEach(element => {
                 aId.push(element.question_id );
             }); 
-            console.log(aId);
             const question = await Question.findOne({
                 where: { id: { [Op.notIn]: aId } },
                 include: [
@@ -53,7 +52,10 @@ class QuestionController {
                 ],
                 attributes: ["id","question"]
             });
-            const level_id = question.level.id;
+
+            if (!question) res.json(Helper.successResponse({}, "success"));
+
+            const level_id = question.level ? question.level.id:null;
             
             
             
@@ -87,11 +89,12 @@ class QuestionController {
                 },
                 clues:[],
                 game: {
-                    id: encrypt(question.game.id),
-                    title: question.game.title,
+                    id: question.game ? encrypt(question.game.id):'',
+                    title: question.game ? question.game.title:'',
                 }
             }
-            question.clues.forEach((result) => {
+            const clue = question.clues ? question.clues : [];
+            clue.forEach((result) => {
                 data.clues.push({
                     id: encrypt(result.id),
                     clue: result.clue
