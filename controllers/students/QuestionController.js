@@ -82,8 +82,8 @@ class QuestionController {
                 level_percentage: level_percentage,
                 is_completed: is_completed,
                 level: {
-                    id: encrypt(question.level.id),
-                    level_type: question.level.level_type
+                    id: question.level ? encrypt(question.level.id):'',
+                    level_type: question.level ? question.level.level_type:'',
                 },
                 clues:[],
                 game: {
