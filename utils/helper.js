@@ -19,7 +19,7 @@ class Helper {
 
     static userDetails =  (user) => {
             const user_type = user.user_type;
-            const selectUser = user_type == 'Student' ? user.student : user.coach;
+        const selectUser = user_type == 'Student' ? user.student : (user_type == 'Coach' ? user.coach : user.admin);
             var user_details = {
                 user_id: encrypt(user.id),
                 user_type: user.user_type,
@@ -87,6 +87,29 @@ class Helper {
     static generateOtp = () => {
         return 1234;
         return this.randomNumber(100000, 999999);
+    };
+
+    /**
+   * degit set
+   * @returns number
+   */
+
+    static findDigit = (id) => {
+       const length=id.toString().length;
+        if (length == 1)
+           {
+         var   data = '00' + id;
+        }
+        else if (length == 2)
+        {
+            var  data = '0' + id;
+        }
+        else
+        {
+            var  data = id;
+        }
+        return data;
+       
     };
 
     /**

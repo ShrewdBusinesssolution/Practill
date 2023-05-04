@@ -29,7 +29,36 @@ const studentAnswerSchema = Joi.object({
 
 
 });
+
+
+/**
+ * game activity
+ */
+const gameActivitySchema = Joi.object({
+    school_id: Joi.string().required().messages({
+        "string.base": "School should be a type of string",
+        "string.empty": "School is not allowed to be empty",
+        "string.required": "School is a required field",
+    }),
+    grad: Joi.string().required().messages({
+        "string.base": "Grad should be a type of string",
+        "string.empty": "Grad is not allowed to be empty",
+        "string.required": "Grad is a required field",
+    }),
+    game_id: Joi.string().required().messages({
+        "string.base": "Game ID should be a type of string",
+        "string.empty": "Game ID is not allowed to be empty",
+        "string.required": "Game ID is a required field",
+    }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page is a required field",
+    }),
+
+});
 // Export this module
 module.exports = {
-    studentAnswerSchema
+    studentAnswerSchema,
+    gameActivitySchema
 };

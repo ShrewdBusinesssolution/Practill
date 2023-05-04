@@ -188,6 +188,7 @@ class PostBookmarkController {
 
                 const post = {
                     id: encrypt(record.id),
+                    file_type: record.file_type,
                     title: record.title,
                     description: record.description,
                     created_at: record.created_at,
@@ -225,9 +226,9 @@ class PostBookmarkController {
                 //post files push
                 const post_files = record.post_files;
                 post_files.forEach((result) => {
-                    post.post_files.push({
-                        post_file: result.imageUrl(result.post_file)
-                    })
+                    post.post_files.push(
+                       result.imageUrl(result.post_file)
+                    )
                 });
 
                 data.push(post);

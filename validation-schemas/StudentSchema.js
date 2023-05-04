@@ -99,9 +99,35 @@ const getActivitySchema = Joi.object({
     }),
 });
 
+/**
+ * student certificate 
+ */
+const studentCertificateSchema = Joi.object({
+    user_id: Joi.string().allow('').messages({
+        "string.base": "User ID should be a type of string",
+        "string.empty": "User ID is not allowed to be empty",
+    }),
+    certificate_id: Joi.string().allow('').messages({
+        "string.base": "Certificate ID should be a type of string",
+        "string.empty": "Certificate ID is not allowed to be empty",
+    }),
+    filter_type: Joi.string().required().messages({
+        "string.base": "Filter Type should be a type of string",
+        "string.empty": "Filter Type is not allowed to be empty",
+        "any.required": "Filter Type is a required field",
+    }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page is a required field",
+    }),
+
+});
+
 // Export this module
 module.exports = {
     createStudentSchema,
     updateStudentSchema,
-    getActivitySchema
+    getActivitySchema,
+    studentCertificateSchema
 };

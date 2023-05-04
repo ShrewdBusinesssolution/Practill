@@ -47,10 +47,8 @@ const PostCommentController = require("@controllers/PostCommentController");
 const PostBookmarkController = require("@controllers/PostBookmarkController");
 const EventController = require("@controllers/EventController");
 const NotificationController = require("@controllers/NotificationController");
-
-
-
-
+const CertificateController = require("@controllers/CertificateController");
+const GameController = require("@controllers/GameController");
 
 
 
@@ -62,7 +60,11 @@ const NotificationController = require("@controllers/NotificationController");
 router.get("/onboard-details", OnboardingController.index);
 router.get("/interest-details", InterestController.index);
 router.get("/school-details", SchoolController.index);
-router.get("/event-details", EventController.index);
+router.get("/event-details", verifyAccessToken, EventController.index);
+router.get("/certificate-details", verifyAccessToken,CertificateController.index);
+router.get("/game-details", verifyAccessToken, GameController.index);
+
+
 
 router.get("/club-list", ClubController.clubDetails);
 router.post("/join-club", ClubController.joinClub);
@@ -89,7 +91,10 @@ router.post("/notification-post-details", verifyAccessToken, PostController.noti
 router.post("/create-student", StudentController.createStudent);
 router.post("/update-student", verifyAccessToken, upload.single('profile_image'), StudentController.updateStudent);
 
+router.get("/coach-type", CoachController.coachType);
+router.post("/coach-id", CoachController.coachId);
 router.post("/create-coach", CoachController.createCoach);
+router.post("/update-coach", verifyAccessToken, upload.single('profile_image'), CoachController.updateCoach);
 router.post("/delete-coach", CoachController.deleteCoach);
 
 router.post("/create-admin", AdminController.createAdmin);

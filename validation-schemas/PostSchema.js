@@ -13,6 +13,11 @@ const createPostSchema = Joi.object({
         "string.empty": "Post Type is not allowed to be empty",
         "any.required": "Post Type is a required field",
     }),
+    file_type: Joi.string().required().messages({
+        "string.base": "File Type should be a type of string",
+        "string.empty": "File Type is not allowed to be empty",
+        "any.required": "File Type is a required field",
+    }),
     title: Joi.string().trim().max(255).messages({
         "string.base": "Title should be a type of string",
         "string.empty": "Title is not allowed to be empty",
@@ -173,6 +178,54 @@ const deleteTagSchema = Joi.object({
 
 });
 
+
+/**
+ * student activity
+ */
+const studentActivitySchema = Joi.object({
+    user_id: Joi.string().allow('').messages({
+        "string.base": "User ID should be a type of string",
+        "string.empty": "User ID is not allowed to be empty",
+    }),
+    filter_type: Joi.string().required().messages({
+        "string.base": "Filter Type should be a type of string",
+        "string.empty": "Filter Type is not allowed to be empty",
+        "any.required": "Filter Type is a required field",
+    }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page is a required field",
+    }),
+
+});
+
+
+/**
+ * club activity
+ */
+const clubActivitySchema = Joi.object({
+    user_id: Joi.string().allow('').messages({
+        "string.base": "User ID should be a type of string",
+        "string.empty": "User ID is not allowed to be empty",
+    }),
+    club_id: Joi.string().allow('').messages({
+        "string.base": "Club ID should be a type of string",
+        "string.empty": "Club ID is not allowed to be empty",
+    }),
+    filter_type: Joi.string().required().messages({
+        "string.base": "Filter Type should be a type of string",
+        "string.empty": "Filter Type is not allowed to be empty",
+        "any.required": "Filter Type is a required field",
+    }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page is a required field",
+    }),
+
+});
+
 // Export this module
 module.exports = {
     createPostSchema,
@@ -183,5 +236,7 @@ module.exports = {
     deleteCommentSchema,
     getPostSchema,
     postBookmarkSchema,
-    deleteTagSchema
+    deleteTagSchema,
+    studentActivitySchema,
+    clubActivitySchema
 };

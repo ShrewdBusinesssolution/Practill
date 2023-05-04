@@ -1,34 +1,40 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-    class CoachType extends Model {
+    class AnnounceMent extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-
+            AnnounceMent.belongsTo(models.User, {
+                foreignKey: {
+                    name: "announced_user_id",
+                },
+                as: "user",
+            });
         }
     }
-    CoachType.init(
+    AnnounceMent.init(
         {
             id: {
                 type: DataTypes.BIGINT,
                 primaryKey: true,
                 autoIncrement: true
             },
-            prefix_type: DataTypes.STRING,
-            coach_type: DataTypes.STRING,
+            announced_user_id: DataTypes.BIGINT,
+            description: DataTypes.STRING,
+
         },
         {
             sequelize,
-            modelName: "CoachType",
-            tableName: "coach_types",
+            modelName: "AnnounceMent",
+            tableName: "announcements",
             underscored: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
         }
     );
-    return CoachType;
+    return AnnounceMent;
 };

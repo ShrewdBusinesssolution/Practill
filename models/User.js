@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
                 },
                 as: "coach",
             });
+            User.hasOne(models.Admin, {
+                foreignKey: {
+                    name: "user_id",
+                },
+                as: "admin",
+            });
         }
     }
     User.init(

@@ -55,6 +55,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             user_id: DataTypes.BIGINT,
             post_type: DataTypes.ENUM("general", "club"),
+            file_type: DataTypes.ENUM("video", "image","document"),
             club_id: DataTypes.BIGINT,
             title: DataTypes.STRING,
             description: DataTypes.STRING

@@ -1,6 +1,5 @@
 const { Post, PostComment, PostBookmark, PostLike, PostTag, PostFile, User, Student, Coach, Club, ClubJoin } = require("@models");
 const createError = require("http-errors");
-const sequelize = require('sequelize');
 const Helper = require("@utils/helper");
 const { encrypt, decrypt } = require("@utils/crypto");
 const DateTimeHelper = require("@utils/date_time_helper");
@@ -8,6 +7,8 @@ const { createPostSchema, updatePostSchema, deletePostSchema, getPostSchema, del
 const fs = require("fs");
 const path = require("path");
 const Op = require('sequelize').Op;
+const sequelize = require('sequelize');
+
 
 
 class PostController {
@@ -37,11 +38,13 @@ class PostController {
             const title = result.title;
             const description = result.description;
             const tag_user = result.tag_user;
+            const file_type = result.file_type;
             const club_id=post_type == 'club' ? decrypt(result.club_id) : 0;
             var post = await Post.create({
                 user_id: user_id,
                 club_id: club_id,
                 post_type: post_type,
+                file_type: file_type,
                 title: title,
                 description: description
             });
@@ -383,6 +386,11 @@ class PostController {
                                         ],
                                     }
                                 ],
+                                order: [
+                                    ['id', 'DESC']
+                                ],
+                                offset: offset,
+                                limit: limit,
                                 
                             });
                             var data = {
@@ -398,6 +406,7 @@ class PostController {
                             club.posts.forEach(async (record) => {
                                 const post = {
                                     id: encrypt(record.id),
+                                    file_type: record.file_type,
                                     title: record.title,
                                     description: record.description,
                                     created_at: record.created_at,
@@ -435,9 +444,9 @@ class PostController {
                                 //post files push
                                 const post_files = record.post_files;
                                 post_files.forEach((result) => {
-                                    post.post_files.push({
-                                        post_file: result.imageUrl(result.post_file)
-                                    })
+                                    post.post_files.push(
+                                         result.imageUrl(result.post_file)
+                                    )
                                 });
                                 
                                 data.posts.push(post);
@@ -555,6 +564,7 @@ class PostController {
                                 
                                 const post = {
                                     id: encrypt(record.id),
+                                    file_type: record.file_type,
                                     title: record.title,
                                     description: record.description,
                                     created_at: record.created_at,
@@ -592,9 +602,9 @@ class PostController {
                                 //post files push
                                 const post_files = record.post_files;
                                 post_files.forEach((result) => {
-                                    post.post_files.push({
-                                        post_file: result.imageUrl(result.post_file)
-                                    })
+                                    post.post_files.push(
+                                        result.imageUrl(result.post_file)
+                                    )
                                 });
                                 
                                 data.push(post);
@@ -715,6 +725,9 @@ class PostController {
                                 
                                 
                             ],
+                            order: [
+                                ['id', 'DESC']
+                            ],
                             offset: offset,
                             limit: limit,
                         });
@@ -724,6 +737,7 @@ class PostController {
                             
                             const post = {
                                 id: encrypt(record.id),
+                                file_type: record.file_type,
                                 title: record.title,
                                 description: record.description,
                                 created_at: record.created_at,
@@ -761,9 +775,9 @@ class PostController {
                             //post files push
                             const post_files = record.post_files;
                             post_files.forEach((result) => {
-                                post.post_files.push({
-                                    post_file: result.imageUrl(result.post_file)
-                                })
+                                post.post_files.push(
+                                    result.imageUrl(result.post_file)
+                                )
                             });
                             
                             data.push(post);
@@ -960,6 +974,11 @@ class PostController {
                                 
                                 
                             ],
+                            order: [
+                                ['id', 'DESC']
+                            ],
+                            offset: offset,
+                            limit: limit,
                         });
                         var data = [];
                         
@@ -967,6 +986,7 @@ class PostController {
                             
                             const post = {
                                 id: encrypt(record.id),
+                                file_type: record.file_type,
                                 title: record.title,
                                 description: record.description,
                                 created_at: record.created_at,
@@ -1004,9 +1024,9 @@ class PostController {
                             //post files push
                             const post_files = record.post_files;
                             post_files.forEach((result) => {
-                                post.post_files.push({
-                                    post_file: result.imageUrl(result.post_file)
-                                })
+                                post.post_files.push(
+                                   result.imageUrl(result.post_file)
+                                )
                             });
                             
                             data.push(post);

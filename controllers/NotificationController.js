@@ -15,10 +15,9 @@ class NotificationController {
     */
     static notificationDetails = async (req, res, next) => {
         try {
-            console.log(DateTimeHelper.startOfDate);
             const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
             const user_id = decrypt(token_info.audience);
-            const todayNotifictaion = await Notification.findAll({
+            const notifictaion = await Notification.findAll({
                 where: {
                     user_id: user_id,
                     // [Op.and]: [
@@ -51,12 +50,13 @@ class NotificationController {
                 yesterday: [],
                 this_month:[]
             }
-            todayNotifictaion.forEach((element) => {
+            notifictaion.forEach((element) => {
                 const record = {
                     user: element.user ? Helper.userDetails(element.user) : null,
                     notifiable_type: element.notifiable_type,
                     notifiable_id: encrypt(element.notifiable_id),
                     description: element.description,
+                    created_at: element.created_at
                     
                 };
                 if (DateTimeHelper.currentDate() == DateTimeHelper.convertDateFormat(element.created_at))

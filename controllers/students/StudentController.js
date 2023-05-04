@@ -1,4 +1,4 @@
-const { User, Student, StudentInterest, School, StudentActivity } = require("@models");
+const { User, Student, StudentInterest, School, StudentActivity, StudentCertificate, Certificate } = require("@models");
 const createError = require("http-errors");
 const Helper = require("@utils/helper");
 const { encrypt, decrypt } = require("@utils/crypto");
@@ -170,7 +170,7 @@ class StudentController {
                                 {
                                     model: School,
                                     as: "schools",
-                                    attributes: ["school_name"],
+                                    attributes: ["id","school_name"],
                                 },
                             ],
                         });
@@ -180,7 +180,10 @@ class StudentController {
                             name: student.name,
                             mobile_number: student.mobile_number,
                             school_name: student.school_name,
-                            schools: student.schools,
+                            schools: {
+                                id: student.schools ? encrypt(student.schools.id):'',
+                                school_name: student.schools ? student.schools.school_name:'',
+                            },
                             grad: student.grad,
                             level: student.level,
                             reward_points: student.reward_points,
@@ -257,7 +260,50 @@ class StudentController {
                                 if (error.isJoi == true) error.status = 422;
                                 next(error);
                             }
-                        }
+    }
+    
+
+    /**
+* my certificate list
+* @param {*} req
+* @param {*} res
+* @param {*} next
+*/
+    static myCertificates = async (req, res, next) => {
+        try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
+
+            const certificate = await StudentCertificate.findAll({
+                where: {
+                    user_id: user_id,
+                },
+                include: [
+                    {
+                        model: Certificate,
+                        as: "certificates"
+                    },
+                ]
+            });
+
+            var data = [];
+
+            certificate.forEach((record) => {
+                data.push({
+                    id: record.certificates ? encrypt(record.certificates.id):'',
+                    title: record.certificates ? record.certificates.title:'',
+                    certificate_image: record.certificates ? record.certificates.imageUrl(record.certificates.certificate_image):'',
+                    description: record.certificates ? record.certificates.description:'',
+                });
+            });
+
+            res.json(Helper.successResponse(data, "success"));
+
+        } catch (error) {
+            if (error.isJoi == true) error.status = 422;
+            next(error);
+        }
+    };
                     }
                     
                     // Export this module

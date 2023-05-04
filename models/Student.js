@@ -15,6 +15,18 @@ module.exports = (sequelize, DataTypes) => {
                 },
                 as: "schools",
             });
+            Student.belongsTo(models.User, {
+                foreignKey: {
+                    name: "user_id",
+                },
+                as: "user",
+            });
+            Student.hasMany(models.StudentAnswer, {
+                foreignKey: {
+                    name: "user_id",
+                },
+                as: "answers",
+            });
         }
         /**
        * imageUrl
