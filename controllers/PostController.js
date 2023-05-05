@@ -338,6 +338,9 @@ class PostController {
                                                 model: PostComment,
                                                 as: "post_comments",
                                                 attributes: ["id", "comment"],
+                                                order: [
+                                                    ['id', 'DESC']
+                                                ],
                                                 include: [
                                                     {
                                                         model: User,
@@ -384,6 +387,22 @@ class PostController {
                                             
                                             
                                         ],
+                                        attributes: {
+                                            include: [
+                                                [
+                                                    sequelize.literal(
+                                                        '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + user_id + ')'),
+                                                    'is_liked'
+                                                ],
+                                                [
+                                                    sequelize.literal(
+                                                        '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + user_id + ')'),
+                                                    'is_bookmarked'
+                                                ],
+
+
+                                            ],
+                                        },
                                     }
                                 ],
                                 order: [
@@ -391,26 +410,44 @@ class PostController {
                                 ],
                                 offset: offset,
                                 limit: limit,
+           
                                 
                             });
+
+                            if (!club) res.status(201).json(
+                                Helper.successResponse({}, "Success")
+                            );
+
                             var data = {
                                 club_name: club.club_name,
                                 club_image: club.imageUrl(club.club_image),
                                 club_description: club.club_description,
-                                color: record.color,
+                                color: club.color,
                                 joined_count: club.club_joined_users.length,
                                 posts:[]
                             }
                             
+                            if (!club.posts) res.status(201).json(
+                                Helper.successResponse(data, "Success")
+                            );
                             
                             club.posts.forEach(async (record) => {
+
+                                 //TODO:check login user liked or not
+                                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                                 //TODO:check login user bookmarked or not
+                                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+
+
                                 const post = {
                                     id: encrypt(record.id),
                                     file_type: record.file_type,
                                     title: record.title,
                                     description: record.description,
                                     created_at: record.created_at,
-                                    is_liked: record.is_liked,
+                                    is_liked: is_liked,
+                                    is_bookmarked: is_bookmarked,
                                     post_comments_count: record.post_comments.length,
                                     post_likes_count: record.post_likes.length,
                                     post_tags: [],
@@ -490,6 +527,9 @@ class PostController {
                                         model: PostComment,
                                         as: "post_comments",
                                         attributes: ["id", "comment"],
+                                        order: [
+                                            ['id', 'DESC']
+                                        ],
                                         include: [
                                             {
                                                 model: User,
@@ -541,26 +581,34 @@ class PostController {
                                 ],
                                 offset: offset,
                                 limit: limit,
+                                attributes: {
+                                    include: [
+                                        [
+                                            sequelize.literal(
+                                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = '+user_id+')'),
+                                            'is_liked'
+                                        ],
+                                        [
+                                            sequelize.literal(
+                                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = '+user_id+')'),
+                                            'is_bookmarked'
+                                        ],
+
+
+                                    ],
+                                },
+
                             }); 
                             var data = [];
                             
                             postData.forEach(async (record) => {
                                 
-                                // //TODO:check login user liked or not
-                                // const check_like = await PostLike.findOne({
-                                //     where: {
-                                //         user_id: user_id
-                                //     },
-                                //     attributes: ['id', 'user_id', 'post_id', 'created_at', 'updated_at']
-                                // });
-                                
-                                // //TODO:check login user bookmarked or not
-                                // const check_bookmark = await PostBookmark.findOne({
-                                //     where: {
-                                //         user_id: user_id
-                                //     },
-                                // });
-                                
+                                //TODO:check login user liked or not
+                                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                                //TODO:check login user bookmarked or not
+                                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+
                                 
                                 const post = {
                                     id: encrypt(record.id),
@@ -568,7 +616,8 @@ class PostController {
                                     title: record.title,
                                     description: record.description,
                                     created_at: record.created_at,
-                                    is_liked: record.is_liked,
+                                    is_liked: is_liked,
+                                    is_bookmarked: is_bookmarked,
                                     post_comments_count: record.post_comments.length,
                                     post_likes_count: record.post_likes.length,
                                     post_tags: [],
@@ -679,6 +728,9 @@ class PostController {
                                     model: PostComment,
                                     as: "post_comments",
                                     attributes: ["id", "comment"],
+                                    order: [
+                                        ['id', 'DESC']
+                                    ],
                                     include: [
                                         {
                                             model: User,
@@ -730,10 +782,33 @@ class PostController {
                             ],
                             offset: offset,
                             limit: limit,
+                            attributes: {
+                                include: [
+                                    [
+                                        sequelize.literal(
+                                            '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + user_id + ')'),
+                                        'is_liked'
+                                    ],
+                                    [
+                                        sequelize.literal(
+                                            '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + user_id + ')'),
+                                        'is_bookmarked'
+                                    ],
+
+
+                                ],
+                            },
                         });
                         var data = [];
                         
                         postData.forEach(async (record) => {
+
+
+                            //TODO:check login user liked or not
+                            const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                            //TODO:check login user bookmarked or not
+                            const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
                             
                             const post = {
                                 id: encrypt(record.id),
@@ -741,7 +816,8 @@ class PostController {
                                 title: record.title,
                                 description: record.description,
                                 created_at: record.created_at,
-                                is_liked: record.is_liked,
+                                is_liked: is_liked,
+                                is_bookmarked: is_bookmarked,
                                 post_comments_count: record.post_comments.length,
                                 post_likes_count: record.post_likes.length,
                                 post_tags: [],
@@ -928,6 +1004,9 @@ class PostController {
                                     model: PostComment,
                                     as: "post_comments",
                                     attributes: ["id", "comment"],
+                                    order: [
+                                        ['id', 'DESC']
+                                    ],
                                     include: [
                                         {
                                             model: User,
@@ -977,12 +1056,32 @@ class PostController {
                             order: [
                                 ['id', 'DESC']
                             ],
-                            offset: offset,
-                            limit: limit,
+                            attributes: {
+                                include: [
+                                    [
+                                        sequelize.literal(
+                                            '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + user_id + ')'),
+                                        'is_liked'
+                                    ],
+                                    [
+                                        sequelize.literal(
+                                            '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + user_id + ')'),
+                                        'is_bookmarked'
+                                    ],
+
+
+                                ],
+                            },
                         });
                         var data = [];
                         
                         postData.forEach(async (record) => {
+
+                            //TODO:check login user liked or not
+                            const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                            //TODO:check login user bookmarked or not
+                            const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
                             
                             const post = {
                                 id: encrypt(record.id),
@@ -990,7 +1089,8 @@ class PostController {
                                 title: record.title,
                                 description: record.description,
                                 created_at: record.created_at,
-                                is_liked: record.is_liked,
+                                is_liked: is_liked,
+                                is_bookmarked: is_bookmarked,
                                 post_comments_count: record.post_comments.length,
                                 post_likes_count: record.post_likes.length,
                                 post_tags: [],

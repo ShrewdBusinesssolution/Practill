@@ -94,6 +94,22 @@ const postLikeSchema = Joi.object({
     }),
 });
 
+/**
+ * get comments data
+ */
+const getCommentSchema = Joi.object({
+    post_id: Joi.string().required().messages({
+        "string.base": "Post ID should be a type of string",
+        "string.empty": "Post ID is not allowed to be empty",
+    }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page is a required field",
+    }),
+
+});
+
 
 /**
  * post comments
@@ -232,6 +248,7 @@ module.exports = {
     updatePostSchema,
     deletePostSchema,
     postLikeSchema,
+    getCommentSchema,
     storeCommentSchema,
     deleteCommentSchema,
     getPostSchema,

@@ -1,10 +1,71 @@
-const { PostComment, Post } = require("@models");
+const { PostComment, Post, User, Student, Coach } = require("@models");
 const createError = require("http-errors");
 const Helper = require("@utils/helper");
 const { encrypt, decrypt } = require("@utils/crypto");
 const DateTimeHelper = require("@utils/date_time_helper");
-const { storeCommentSchema, deleteCommentSchema } = require("@validation-schemas/PostSchema");
+const { storeCommentSchema, deleteCommentSchema, getCommentSchema } = require("@validation-schemas/PostSchema");
 class PostController {
+
+    /**
+    * get onboarding details
+    * @param {*} req
+    * @param {*} res
+    * @param {*} next
+    */
+    static index = async (req, res, next) => {
+        try {
+            const result = await getCommentSchema.validateAsync(req.body);
+            const post_id = decrypt(result.post_id);
+
+            const limit = 10;
+            const offset = 0 + (result.page - 1) * limit;
+
+            const comment = await PostComment.findAll({
+                where: {
+                    post_id:post_id
+                },
+                include: [
+                    {
+                        model: User,
+                        as: "user",
+                        attributes: ["id", "user_type"],
+                        include: [
+                            {
+                                model: Student,
+                                as: "student",
+                                attributes: ["id", "name", "grad", "profile_image"],
+                            },
+                            {
+                                model: Coach,
+                                as: "coach",
+                                attributes: ["id", "name", "profile_image"],
+                            }
+                        ],
+                    },
+                ],
+                order: [
+                    ['id', 'DESC']
+                ],
+                offset: offset,
+                limit: limit,
+            });
+            var data = []
+
+            comment.forEach((result) => {
+                data.push({
+                    id: encrypt(result.id),
+                    comment: result.comment,
+                    user: result.user ? Helper.userDetails(result.user) : null,
+                })
+            });
+
+
+            res.json(Helper.successResponse(data, "success"));
+        } catch (error) {
+            if (error.isJoi == true) error.status = 422;
+            next(error);
+        }
+    };
 
 
     /**

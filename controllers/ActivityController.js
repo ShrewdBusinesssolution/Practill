@@ -25,6 +25,7 @@ class ActivityController {
     static studentActivity = async (req, res, next) => {
         try {
             const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const coach_id = decrypt(token_info.audience);
             const result = await studentActivitySchema.validateAsync(req.body);
             const user_id = result.user_id!='' ? decrypt(result.user_id):'';
             const limit = 10;
@@ -72,6 +73,9 @@ class ActivityController {
                         model: PostComment,
                         as: "post_comments",
                         attributes: ["id", "comment"],
+                        order: [
+                            ['id', 'DESC']
+                        ],
                         include: [
                             {
                                 model: User,
@@ -123,17 +127,41 @@ class ActivityController {
                 ],
                 offset: offset,
                 limit: limit,
+                attributes: {
+                    include: [
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + coach_id + ')'),
+                            'is_liked'
+                        ],
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + coach_id + ')'),
+                            'is_bookmarked'
+                        ],
+
+
+                    ],
+                },
             });
             var data = [];
 
             postData.forEach(async (record) => {
+
+                //TODO:check login user liked or not
+                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+
 
                 const post = {
                     id: encrypt(record.id),
                     title: record.title,
                     description: record.description,
                     created_at: record.created_at,
-                    is_liked: record.is_liked,
+                    is_liked: is_liked,
+                    is_bookmarked: is_bookmarked,
                     post_comments_count: record.post_comments.length,
                     post_likes_count: record.post_likes.length,
                     post_tags: [],
@@ -201,6 +229,7 @@ class ActivityController {
     static clubActivity = async (req, res, next) => {
         try {
             const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const coach_id = decrypt(token_info.audience);
             const result = await clubActivitySchema.validateAsync(req.body);
             const user_id = result.user_id != '' ? decrypt(result.user_id) : '';
             const club_id = result.club_id != '' ? decrypt(result.club_id) : '';
@@ -253,6 +282,9 @@ class ActivityController {
                         model: PostComment,
                         as: "post_comments",
                         attributes: ["id", "comment"],
+                        order: [
+                            ['id', 'DESC']
+                        ],
                         include: [
                             {
                                 model: User,
@@ -304,17 +336,41 @@ class ActivityController {
                 ],
                 offset: offset,
                 limit: limit,
+                attributes: {
+                    include: [
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + coach_id + ')'),
+                            'is_liked'
+                        ],
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + coach_id + ')'),
+                            'is_bookmarked'
+                        ],
+
+
+                    ],
+                },
             });
             var data = [];
 
             postData.forEach(async (record) => {
+
+                //TODO:check login user liked or not
+                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+
 
                 const post = {
                     id: encrypt(record.id),
                     title: record.title,
                     description: record.description,
                     created_at: record.created_at,
-                    is_liked: record.is_liked,
+                    is_liked: is_liked,
+                    is_bookmarked: is_bookmarked,
                     post_comments_count: record.post_comments.length,
                     post_likes_count: record.post_likes.length,
                     post_tags: [],
@@ -393,8 +449,6 @@ class ActivityController {
                         school_id: school_id,
                         grad: grad
                     },
-                   
-
                     order: [
                         ['id', 'DESC']
                     ],
@@ -404,17 +458,16 @@ class ActivityController {
             );
             var data = []
 
-            student.forEach(async (element) => {
-                
+            student.forEach( async(element) => {
                 /**
               * check student game level 
               */
-                // const findLevel = await StudentAnswer.findOne({ where: { user_id: element.user_id} });
-                // if (findLevel) {
+                const findLevel = await  StudentAnswer.findOne({ where: { user_id: element.user_id} });
+                if (findLevel) {
 
-                    // const totalLevelQuestion = await Question.count({ where: { level_id: findLevel.level_id } });
-                    // const totalCorrectAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id,is_correct:1 } });
-                    // const totalWrongAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id, is_correct: 0 } });
+                    const totalLevelQuestion = await Question.count({ where: { level_id: findLevel.level_id } });
+                    const totalCorrectAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id,is_correct:1 } });
+                    const totalWrongAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id, is_correct: 0 } });
                     const record = {
                         user_id: encrypt(element.user_id),
                         name: element.name,
@@ -425,7 +478,7 @@ class ActivityController {
 
                     };
                     data.push(record);
-                // }
+                }
             });
 
             res.json(Helper.successResponse(data, "success"));

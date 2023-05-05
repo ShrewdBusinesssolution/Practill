@@ -5,7 +5,7 @@ const { encrypt, decrypt } = require("@utils/crypto");
 const DateTimeHelper = require("@utils/date_time_helper");
 const { postBookmarkSchema } = require("@validation-schemas/PostSchema");
 const Op = require('sequelize').Op;
-
+const sequelize = require('sequelize');
 class PostBookmarkController {
 
 
@@ -132,6 +132,9 @@ class PostBookmarkController {
                         model: PostComment,
                         as: "post_comments",
                         attributes: ["id", "comment"],
+                        order: [
+                            ['id', 'DESC']
+                        ],
                         include: [
                             {
                                 model: User,
@@ -178,12 +181,37 @@ class PostBookmarkController {
 
 
                 ],
+                order: [
+                    ['id', 'DESC']
+                ],
                 offset: offset,
                 limit: limit,
+                attributes: {
+                    include: [
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + user_id + ')'),
+                            'is_liked'
+                        ],
+                        [
+                            sequelize.literal(
+                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + user_id + ')'),
+                            'is_bookmarked'
+                        ],
+
+
+                    ],
+                },
             });
             var data = [];
 
             postData.forEach(async (record) => {
+
+                //TODO:check login user liked or not
+                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
 
 
                 const post = {
@@ -192,7 +220,8 @@ class PostBookmarkController {
                     title: record.title,
                     description: record.description,
                     created_at: record.created_at,
-                    is_liked: record.is_liked,
+                    is_liked: is_liked,
+                    is_bookmarked: is_bookmarked,
                     post_comments_count: record.post_comments.length,
                     post_likes_count: record.post_likes.length,
                     post_tags: [],

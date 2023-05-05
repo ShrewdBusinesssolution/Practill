@@ -80,6 +80,7 @@ router.post("/my-post-details", verifyAccessToken, PostController.mypostDetails)
 router.post("/my-bookmarks", verifyAccessToken, PostBookmarkController.mybookmarkDetails);
 router.post("/add-like", verifyAccessToken, PostLikeController.likePost);
 router.post("/add-bookmark", verifyAccessToken, PostBookmarkController.bookmarkPost);
+router.post("/get-comment", verifyAccessToken, PostCommentController.index);
 router.post("/add-comment", verifyAccessToken, PostCommentController.storePostComment);
 router.post("/remove-comment", verifyAccessToken, PostCommentController.deletePostComment);
 router.post("/tag-users", verifyAccessToken, PostController.tagUsers);
