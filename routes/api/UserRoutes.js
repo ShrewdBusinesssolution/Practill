@@ -60,7 +60,7 @@ const GameController = require("@controllers/GameController");
 router.get("/onboard-details", OnboardingController.index);
 router.get("/interest-details", InterestController.index);
 router.get("/school-details", SchoolController.index);
-router.get("/event-details", verifyAccessToken, EventController.index);
+router.post("/event-details", verifyAccessToken, EventController.index);
 router.get("/certificate-details", verifyAccessToken,CertificateController.index);
 router.get("/game-details", verifyAccessToken, GameController.index);
 
