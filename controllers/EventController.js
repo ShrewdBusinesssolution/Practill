@@ -1,4 +1,4 @@
-const { Event } = require("@models");
+const { Event, Student,School } = require("@models");
 const { encrypt, decrypt } = require("@utils/crypto");
 const Helper = require("@utils/helper");
 const createError = require("http-errors");
@@ -11,19 +11,38 @@ const sequelize = require('sequelize');
 class EventController {
 
     /**
-     * get onboarding details
+     * get student event details
      * @param {*} req
      * @param {*} res
      * @param {*} next
      */
-    static index = async (req, res, next) => {
+    static studentEvent = async (req, res, next) => {
         try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
             const result = await getEventSchema.validateAsync(req.body);
-     
             const limit = 10;
             const offset = 0 + (result.page - 1) * limit;
 
+
+            const student = await Student.findOne({
+                where: {
+                    user_id: user_id,
+                }
+            });
+
             const event = await Event.findAll({
+                where: {
+                    school_id: student.school_id,
+                    grad: student.grad,
+                },
+                include: [
+                    {
+                        model: School,
+                        as: "school",
+                        attributes: ["id", "school_name"],
+                    },
+                ],
                 order: [
                     ['id', 'DESC']
                 ],
@@ -34,7 +53,70 @@ class EventController {
 
             event.forEach((element) => {
                 const record = {
-                    id:encrypt(element.id),
+                    id: encrypt(element.id),
+                    schools: {
+                        id: element.school ? encrypt(element.school.id) : '',
+                        school_name: element.school ? element.school.school_name : '',
+                    },
+                    grad: element.grad,
+                    title: element.title,
+                    image: element.imageUrl(element.event_image),
+                    description: element.description,
+                    date: element.date,
+
+                };
+                data.push(record);
+            });
+
+            res.json(Helper.successResponse(data, "success"));
+        } catch (error) {
+            if (error.isJoi == true) error.status = 422;
+            next(error);
+        }
+    };
+
+    /**
+ * get coach event details
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+    static coachEvent = async (req, res, next) => {
+        try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
+            const result = await getEventSchema.validateAsync(req.body);
+            const limit = 10;
+            const offset = 0 + (result.page - 1) * limit;
+
+
+            const event = await Event.findAll({
+                where: {
+                    user_id: user_id,
+                },
+                include: [
+                    {
+                        model: School,
+                        as: "school",
+                        attributes: ["id", "school_name"],
+                    },
+                ],
+                order: [
+                    ['id', 'DESC']
+                ],
+                offset: offset,
+                limit: limit,
+            });
+            var data = []
+
+            event.forEach((element) => {
+                const record = {
+                    id: encrypt(element.id),
+                    schools: {
+                        id: element.school ? encrypt(element.school.id) : '',
+                        school_name: element.school ? element.school.school_name : '',
+                    },
+                    grad: element.grad,
                     title: element.title,
                     image: element.imageUrl(element.event_image),
                     description: element.description,
@@ -61,13 +143,21 @@ class EventController {
 
     static createEvent = async (req, res, next) => {
         try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
             const result = await createEventSchema.validateAsync(req.body);
+            const school_id = decrypt(result.school_id);
+            const grad = result.grad;
+
 
             const doesExist = await Event.findOne({ where: { title: result.title } });
 
             if (doesExist) throw createError.Conflict(`This event is already exist`);
             const event_image = req.file ? req.file.filename : '';
             const event = await Event.create({
+                user_id: user_id,
+                school_id: school_id,
+                grad: grad,
                 title: result.title,
                 event_image: event_image,
                 description: result.description,
@@ -93,8 +183,11 @@ class EventController {
            */
     static updateEvent = async (req, res, next) => {
         try {
-
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
             const result = await updateEventSchema.validateAsync(req.body);
+            const school_id = decrypt(result.school_id);
+            const grad = result.grad;
             const event_id = decrypt(result.event_id);
 
             const event = await Event.findOne({
@@ -116,6 +209,8 @@ class EventController {
 
             const event_image = req.file ? req.file.filename : event.event_image;
             const update_event = await event.update({
+                school_id: school_id,
+                grad: grad,
                 title: result.title,
                 description: result.description,
                 event_image: event_image,

@@ -37,7 +37,6 @@ const CoachController = require("@controllers/CoachController");
 const AdminController = require("@controllers/AdminController");
 const StudentController = require("@controllers/students/StudentController");
 const ClubController = require("@controllers/ClubController");
-const createClubSchema = require("@validation-schemas/ClubSchema");
 const OnboardingController = require("@controllers/OnboardingController");
 const InterestController = require("@controllers/InterestController");
 const SchoolController = require("@controllers/SchoolController");
@@ -45,7 +44,6 @@ const PostController = require("@controllers/PostController");
 const PostLikeController = require("@controllers/PostLikeController");
 const PostCommentController = require("@controllers/PostCommentController");
 const PostBookmarkController = require("@controllers/PostBookmarkController");
-const EventController = require("@controllers/EventController");
 const NotificationController = require("@controllers/NotificationController");
 const CertificateController = require("@controllers/CertificateController");
 const GameController = require("@controllers/GameController");
@@ -60,7 +58,6 @@ const GameController = require("@controllers/GameController");
 router.get("/onboard-details", OnboardingController.index);
 router.get("/interest-details", InterestController.index);
 router.get("/school-details", SchoolController.index);
-router.post("/event-details", verifyAccessToken, EventController.index);
 router.get("/certificate-details", verifyAccessToken,CertificateController.index);
 router.get("/game-details", verifyAccessToken, GameController.index);
 
@@ -75,7 +72,8 @@ router.post("/create-post", verifyAccessToken, upload.array("post_file",5), Post
 router.post("/update-post", verifyAccessToken,PostController.updatePost);
 router.post("/remove-post", verifyAccessToken, PostController.deletePost);
 
-router.post("/post-details", verifyAccessToken, PostController.postDetails);
+router.post("/club-post-details", verifyAccessToken, PostController.clubPostDetails);
+router.post("/general-post-details", verifyAccessToken, PostController.generalPostDetails);
 router.post("/my-post-details", verifyAccessToken, PostController.mypostDetails);
 router.post("/my-bookmarks", verifyAccessToken, PostBookmarkController.mybookmarkDetails);
 router.post("/add-like", verifyAccessToken, PostLikeController.likePost);

@@ -54,9 +54,11 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true
             },
             user_id: DataTypes.BIGINT,
-            post_type: DataTypes.ENUM("general", "club"),
-            file_type: DataTypes.ENUM("video", "image","document"),
+            post_type: DataTypes.ENUM("student","coach", "club"),
+            file_type: DataTypes.ENUM("video", "image","document","note","url"),
             club_id: DataTypes.BIGINT,
+            school_id: DataTypes.BIGINT,
+            grad: DataTypes.STRING,
             title: DataTypes.STRING,
             description: DataTypes.STRING
         },

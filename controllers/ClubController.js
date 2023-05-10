@@ -87,16 +87,30 @@ class ClubController {
 
             var data = [];
 
-            clubData.forEach(async (record) => {
+
+            for (let index = 0; index < clubData.length; index++) {
+                const record = clubData[index];
+
+                //TODO:check login user joined or not
+                const check_join = await ClubJoin.findOne({
+                    where: {
+                        user_id: user_id,
+                        club_id: record.id
+                    },
+                });
+
+                //TODO:check login user joined or not
+                const is_joined = check_join ? true : false;
            
                 data.push({
                     id: encrypt(record.id),
                     club_name: record.club_name,
                     club_image: record.imageUrl(record.club_image),
                     club_description: record.club_description,
-                    color: record.color
+                    color: record.color,
+                    is_joined: is_joined
                 });
-            });
+            }
 
             res.json(Helper.successResponse(data, "success"));
 
@@ -118,19 +132,49 @@ class ClubController {
             const user_id = decrypt(token_info.audience);
 
             const result = await joinClubSchema.validateAsync(req.body);
-            const doesExist = await Club.findOne({ where: { id: decrypt(result.club_id), status: 0, } });
+            const join = result.join;
+            const club_id = decrypt(result.club_id)
+            const doesExist = await Club.findOne({ where: { id: club_id, status: 0, } });
 
             if (doesExist) throw createError.Conflict(`Invalid Club`);
 
-            const club = await ClubJoin.create({
-                user_id: user_id,
-                club_id: decrypt(result.club_id)
-            });
+            if (join) {
 
-            if (!club) throw createError.InternalServerError();
+                const checkJoin = await ClubJoin.findOne({
+                    where: {
+                        user_id: user_id,
+                        club_id: club_id
+                    },
+                });
+
+                if (checkJoin) throw createError.Conflict("Already joined");
+
+                const club = await ClubJoin.create({
+                    user_id: user_id,
+                    club_id: club_id
+                });
+
+                if (!club) throw createError.InternalServerError();
+                var message = "Thanks for joining the club";
+            }
+            else
+            {
+                const clubjoin = await ClubJoin.findOne({
+                    where: {
+                        user_id: user_id,
+                        club_id: club_id
+                    },
+                });
+
+                if (!clubjoin) throw createError.Conflict("Already removed");
+
+                const delete_join = await clubjoin.destroy();
+                var message = "Removed the club";
+
+            }
 
             res.status(201).json(
-                Helper.successResponse([], "Thanks for joining the club")
+                Helper.successResponse([], message)
             );
         } catch (error) {
             if (error.isJoi == true) error.status = 422;

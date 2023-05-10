@@ -4,6 +4,16 @@ const Joi = require("joi").extend(require("@joi/date"));
  */
 
 const createEventSchema = Joi.object({
+    school_id: Joi.string().required().messages({
+        "string.base": "School ID should be a type of string",
+        "string.empty": "School ID is not allowed to be empty",
+        "any.required": "School ID is a required field",
+    }),
+    grad: Joi.string().required().messages({
+        "string.base": "Grad should be a type of string",
+        "string.empty": "Grad is not allowed to be empty",
+        "any.required": "Grad is a required field",
+    }),
     title: Joi.string().trim().required().max(255).messages({
         "string.base": "Title should be a type of string",
         "string.empty": "Title is not allowed to be empty",
@@ -25,6 +35,16 @@ const createEventSchema = Joi.object({
  * store Event
  */
 const updateEventSchema = Joi.object({
+    school_id: Joi.string().required().messages({
+        "string.base": "School ID should be a type of string",
+        "string.empty": "School ID is not allowed to be empty",
+        "any.required": "School ID is a required field",
+    }),
+    grad: Joi.string().required().messages({
+        "string.base": "Grad should be a type of string",
+        "string.empty": "Grad is not allowed to be empty",
+        "any.required": "Grad is a required field",
+    }),
     event_id: Joi.string().required().messages({
         "string.base": "Event ID should be a type of string",
         "string.empty": "Event ID is not allowed to be empty",

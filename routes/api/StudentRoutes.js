@@ -5,7 +5,7 @@ const router = express.Router();
 const StudentController = require("@controllers/students/StudentController");
 const DashboardController = require("@controllers/DashboardController");
 const QuestionController = require("@controllers/students/QuestionController");
-
+const EventController = require("@controllers/EventController");
 
 
 
@@ -25,7 +25,7 @@ router.get("/questions", QuestionController.questions);
 router.post("/write-answer", QuestionController.storeStudentAnswer);
 router.get("/profile", StudentController.profile);
 router.post("/my-activity", StudentController.myActivity);
-
+router.post("/event-details", EventController.coachEvent);
 
 
 

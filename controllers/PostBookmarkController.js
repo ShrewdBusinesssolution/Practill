@@ -185,34 +185,34 @@ class PostBookmarkController {
                     ['id', 'DESC']
                 ],
                 offset: offset,
-                limit: limit,
-                attributes: {
-                    include: [
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + user_id + ')'),
-                            'is_liked'
-                        ],
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + user_id + ')'),
-                            'is_bookmarked'
-                        ],
-
-
-                    ],
-                },
+                limit: limit
             });
             var data = [];
 
-            postData.forEach(async (record) => {
+            for (let index = 0; index < postData.length; index++) {
+                const record = postData[index];
 
                 //TODO:check login user liked or not
-                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+                const check_like = await PostLike.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
 
                 //TODO:check login user bookmarked or not
-                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+                const check_bookmark = await PostBookmark.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
 
+                //TODO:check login user liked or not
+                const is_liked = check_like ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = check_bookmark ? true : false;
 
                 const post = {
                     id: encrypt(record.id),
@@ -261,7 +261,7 @@ class PostBookmarkController {
                 });
 
                 data.push(post);
-            });
+            }
 
 
 

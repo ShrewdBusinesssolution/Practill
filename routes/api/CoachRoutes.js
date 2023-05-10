@@ -58,7 +58,8 @@ router.post("/game-activity", ActivityController.gameActivity);
 router.post("/student-certificates", CertificateController.studentCertificates);
 
 
-router.post("/create-event", upload.single('event_image'),EventController.createEvent);
+router.post("/create-event", upload.single('event_image'), EventController.createEvent);
+router.post("/event-details", EventController.studentEvent);
 router.post("/update-event", upload.single('event_image'), EventController.updateEvent);
 router.post("/delete-event", EventController.deleteEvent);
 

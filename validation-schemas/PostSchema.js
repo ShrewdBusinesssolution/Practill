@@ -4,6 +4,16 @@ const Joi = require("joi").extend(require("@joi/date"));
  * store post
  */
 const createPostSchema = Joi.object({
+    school_id: Joi.string().required().messages({
+        "string.base": "School ID should be a type of string",
+        "string.empty": "School ID is not allowed to be empty",
+        "any.required": "School ID is a required field",
+    }),
+    grad: Joi.string().required().messages({
+        "string.base": "Grad should be a type of string",
+        "string.empty": "Grad is not allowed to be empty",
+        "any.required": "Grad is a required field",
+    }),
 
     club_id: Joi.string().allow("").messages({
         "string.base": "Club ID should be a type of string",
@@ -43,6 +53,11 @@ const createPostSchema = Joi.object({
  * update post
  */
 const updatePostSchema = Joi.object({
+    user_id: Joi.string().required().messages({
+        "string.base": "User ID should be a type of string",
+        "string.empty": "User ID is not allowed to be empty",
+        "any.required": "User ID is a required field",
+    }),
     post_id: Joi.string().required().messages({
         "string.base": "Post ID should be a type of string",
         "string.empty": "Post ID is not allowed to be empty",
@@ -162,13 +177,24 @@ const postBookmarkSchema = Joi.object({
 });
 
 /**
- * get post details
+ * get club post details
  */
-const getPostSchema = Joi.object({
-    club_id: Joi.string().allow('').messages({
+const getclubPostSchema = Joi.object({
+    club_id: Joi.string().required().messages({
         "string.base": "Club ID should be a type of string",
         "string.empty": "Club ID is not allowed to be empty",
     }),
+    page: Joi.number().integer().required().messages({
+        "number.base": "Page should be a type of integer",
+        "number.empty": "Page is not allowed to be empty",
+        "any.required": "Page  is a required field",
+    }),
+});
+
+/**
+ * get general post details
+ */
+const getgeneralPostSchema = Joi.object({
     post_type: Joi.string().required().messages({
         "string.base": "Post Type should be a type of string",
         "string.empty": "Post Type is not allowed to be empty",
@@ -180,6 +206,7 @@ const getPostSchema = Joi.object({
         "any.required": "Page  is a required field",
     }),
 });
+
 
 
 /**
@@ -251,7 +278,8 @@ module.exports = {
     getCommentSchema,
     storeCommentSchema,
     deleteCommentSchema,
-    getPostSchema,
+    getclubPostSchema,
+    getgeneralPostSchema,
     postBookmarkSchema,
     deleteTagSchema,
     studentActivitySchema,

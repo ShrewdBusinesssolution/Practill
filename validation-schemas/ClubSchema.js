@@ -35,6 +35,11 @@ const joinClubSchema = Joi.object({
         "string.empty": "Club id is not allowed to be empty",
         "string.required": "Club id is a required field",
     }),
+    join: Joi.boolean().required().messages({
+        "boolean.base": "Join should be a type of boolean",
+        "boolean.empty": "Join is not allowed to be empty",
+        "boolean.required": "Join  is a required field",
+    }),
 });
 
 

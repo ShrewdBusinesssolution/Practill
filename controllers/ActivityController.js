@@ -1,4 +1,4 @@
-const { Post, PostComment, PostLike, PostTag, PostFile, User, Student, Coach, StudentAnswer,Question } = require("@models");
+const { Post, PostComment, PostLike, PostTag, PostFile, User, Student, Coach, StudentAnswer, Question, Level, PostBookmark } = require("@models");
 const createError = require("http-errors");
 const Helper = require("@utils/helper");
 const { encrypt, decrypt } = require("@utils/crypto");
@@ -24,8 +24,6 @@ class ActivityController {
     */
     static studentActivity = async (req, res, next) => {
         try {
-            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
-            const coach_id = decrypt(token_info.audience);
             const result = await studentActivitySchema.validateAsync(req.body);
             const user_id = result.user_id!='' ? decrypt(result.user_id):'';
             const limit = 10;
@@ -38,7 +36,7 @@ class ActivityController {
             const where = result.filter_type != 'all' ? {
                 user_id: user_id
             }:{}
-            where['post_type'] = 'general';
+            where['post_type'] = 'student';
             var postData = await Post.findAll({
                 where,
                 include: [
@@ -126,33 +124,34 @@ class ActivityController {
                     ['id', 'DESC']
                 ],
                 offset: offset,
-                limit: limit,
-                attributes: {
-                    include: [
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + coach_id + ')'),
-                            'is_liked'
-                        ],
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + coach_id + ')'),
-                            'is_bookmarked'
-                        ],
-
-
-                    ],
-                },
+                limit: limit
             });
             var data = [];
 
-            postData.forEach(async (record) => {
+            for (let index = 0; index < postData.length; index++) {
+                const record = postData[index];
 
                 //TODO:check login user liked or not
-                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+                const check_like = await PostLike.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
 
                 //TODO:check login user bookmarked or not
-                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+                const check_bookmark = await PostBookmark.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
+
+                //TODO:check login user liked or not
+                const is_liked = check_like ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = check_bookmark ? true : false;
 
 
                 const post = {
@@ -201,7 +200,7 @@ class ActivityController {
                 });
 
                 data.push(post);
-            });
+            }
 
 
 
@@ -335,33 +334,34 @@ class ActivityController {
                     ['id', 'DESC']
                 ],
                 offset: offset,
-                limit: limit,
-                attributes: {
-                    include: [
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = Post.id and post_likes.user_id = ' + coach_id + ')'),
-                            'is_liked'
-                        ],
-                        [
-                            sequelize.literal(
-                                '(SELECT COUNT(*) FROM post_bookmarks WHERE post_bookmarks.post_id = Post.id and post_bookmarks.user_id = ' + coach_id + ')'),
-                            'is_bookmarked'
-                        ],
-
-
-                    ],
-                },
+                limit: limit
             });
             var data = [];
 
-            postData.forEach(async (record) => {
+            for (let index = 0; index < postData.length; index++) {
+                const record = postData[index];
 
                 //TODO:check login user liked or not
-                const is_liked = record.dataValues.is_liked > 0 ? true : false;
+                const check_like = await PostLike.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
 
                 //TODO:check login user bookmarked or not
-                const is_bookmarked = record.dataValues.is_bookmarked > 0 ? true : false;
+                const check_bookmark = await PostBookmark.findOne({
+                    where: {
+                        user_id: user_id,
+                        post_id: record.id
+                    },
+                });
+
+                //TODO:check login user liked or not
+                const is_liked = check_like ? true : false;
+
+                //TODO:check login user bookmarked or not
+                const is_bookmarked = check_bookmark ? true : false;
 
 
                 const post = {
@@ -410,7 +410,7 @@ class ActivityController {
                 });
 
                 data.push(post);
-            });
+            }
 
 
 
@@ -439,8 +439,7 @@ class ActivityController {
             const result = await gameActivitySchema.validateAsync(req.body);
             const school_id = decrypt(result.school_id);
             const grad = result.grad;
-            const limit = 10;
-            const offset = 0 + (result.page - 1) * limit;
+     
 
 
             const student = await Student.findAll(
@@ -452,34 +451,37 @@ class ActivityController {
                     order: [
                         ['id', 'DESC']
                     ],
-                    offset: offset,
-                    limit: limit,
                 }
             );
             var data = []
-
-            student.forEach( async(element) => {
-                /**
-              * check student game level 
-              */
-                const findLevel = await  StudentAnswer.findOne({ where: { user_id: element.user_id} });
+            for (let index = 0; index < student.length; index++) {
+                const element = student[index];
+                 /**
+                 * check student game level 
+                  */
+                const findLevel = await StudentAnswer.findOne({ where: { user_id: element.user_id } });
                 if (findLevel) {
 
+                    const getLevel = await Level.findOne({ where: { id: findLevel.level_id } });
                     const totalLevelQuestion = await Question.count({ where: { level_id: findLevel.level_id } });
-                    const totalCorrectAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id,is_correct:1 } });
+                    const totalCorrectAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id, is_correct: 1 } });
                     const totalWrongAnswered = await StudentAnswer.count({ where: { user_id: element.user_id, level_id: findLevel.level_id, is_correct: 0 } });
+                    const percentage = (totalCorrectAnswered / totalLevelQuestion) * 100;
                     const record = {
                         user_id: encrypt(element.user_id),
                         name: element.name,
                         profile_image: element.profile_image == null ? "https://ui-avatars.com/api/?background=74A02F&color=fff&name=" + element.name : element.imageUrl(element.profile_image),
-                        total_level_question: "totalLevelQuestion",
-                        total_correct_answer: "totalCorrectAnswered",
-                        total_wrong_answer: "totalWrongAnswered",
+                        level: getLevel ? getLevel.level_type:'',
+                        total_level_question: totalLevelQuestion,
+                        total_correct_answer: totalCorrectAnswered,
+                        total_wrong_answer: totalWrongAnswered,
+                        percentage: percentage
 
                     };
                     data.push(record);
                 }
-            });
+
+            }
 
             res.json(Helper.successResponse(data, "success"));
         } catch (error) {

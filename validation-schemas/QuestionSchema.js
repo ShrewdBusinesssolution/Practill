@@ -49,12 +49,7 @@ const gameActivitySchema = Joi.object({
         "string.base": "Game ID should be a type of string",
         "string.empty": "Game ID is not allowed to be empty",
         "string.required": "Game ID is a required field",
-    }),
-    page: Joi.number().integer().required().messages({
-        "number.base": "Page should be a type of integer",
-        "number.empty": "Page is not allowed to be empty",
-        "any.required": "Page is a required field",
-    }),
+    })
 
 });
 // Export this module
