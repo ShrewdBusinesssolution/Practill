@@ -18,7 +18,6 @@ const EventController = require("@controllers/EventController");
 
 // ROUTES START
 
-router.post("/store-interest", StudentController.storeStudentInterest);
 router.get("/dashboard-details", DashboardController.studentDashboardDetails);
 router.get("/my-certificates", StudentController.myCertificates);
 router.get("/questions", QuestionController.questions);

@@ -40,6 +40,9 @@ const createStudentSchema = Joi.object({
         "string.min": "Password should be minimum 8 characters",
         "any.required": "Password is a required field",
     }),
+    interest_id: Joi.array().required().messages({
+        "array.base": "Interest should be a type of array",
+    })
 });
 
 /**

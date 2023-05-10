@@ -40,6 +40,14 @@ class StudentController {
             });
             
             if (!student) throw createError.InternalServerError();
+
+            const interest_id = result.interest_id;
+            interest_id.forEach(function (id) {
+                var interest = StudentInterest.create({
+                    user_id: user.id,
+                    interest_id: decrypt(id),
+                });
+            });
             
             
             
@@ -53,37 +61,7 @@ class StudentController {
         };
         
         
-        /**
-        * student interest
-        * @param {*} req
-        * @param {*} res
-        * @param {*} next
-        */
-        static storeStudentInterest = async (req, res, next) => {
-            try {
-                const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
-                const user_id = decrypt(token_info.audience);
-                
-                const interest_id = req.body.interest_id;
-                var flag = false;
-                interest_id.forEach(function (id) {
-                    var interest = StudentInterest.create({
-                        user_id: user_id,
-                        interest_id: decrypt(id),
-                    });
-                    flag = true;
-                });
-                
-                if (!flag) throw createError.InternalServerError();
-                
-                res.status(201).json(
-                    Helper.successResponse([], "Interest has been stored")
-                    );
-                } catch (error) {
-                    if (error.isJoi == true) error.status = 422;
-                    next(error);
-                }
-            };
+    
             
             
             /**
