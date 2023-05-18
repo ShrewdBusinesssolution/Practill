@@ -58,7 +58,8 @@ module.exports = (sequelize, DataTypes) => {
             school_name: {
                 allowNull: true,
                 type: DataTypes.STRING,
-            }
+            },
+            address: DataTypes.STRING,
         },
         {
             sequelize,

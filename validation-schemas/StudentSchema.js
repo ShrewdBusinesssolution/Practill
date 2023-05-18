@@ -83,6 +83,12 @@ const updateStudentSchema = Joi.object({
     profile_image: Joi.string().allow('').messages({
         "string.base": "Profile image should be a type of string",
     }),
+    address: Joi.string().trim().max(1000).required().messages({
+        "string.base": "Address should be a type of string",
+        "string.empty": "Address is not allowed to be empty",
+        "string.max": "Address should be maximum 100 characters",
+        "any.required": " Address is a required field",
+    }),
 });
 
 /**

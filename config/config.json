@@ -26,10 +26,10 @@
         }
     },
     "production": {
-        "username": "root",
-        "password": null,
+        "username": "practils",
+        "password": "Practils@123",
         "database": "database_production",
-        "host": "127.0.0.1",
+        "host": "144.91.100.88:60082",
         "dialect": "mysql",
         "timezone": "+05:30",
         "dialectOptions": {

@@ -43,6 +43,8 @@ module.exports = (sequelize, DataTypes) => {
             mobile_number: DataTypes.BIGINT,
             name: DataTypes.STRING,
             email: DataTypes.STRING,
+            address: DataTypes.STRING,
+
         },
         {
             sequelize,

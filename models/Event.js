@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: "Event",
-            tableName: "events",
+            tableName: "event_lists",
             underscored: true,
             createdAt: "created_at",
             updatedAt: "updated_at",

@@ -1,8 +1,8 @@
-const { Event, Student,School } = require("@models");
+const { Event, Student, School, EventEnrole } = require("@models");
 const { encrypt, decrypt } = require("@utils/crypto");
 const Helper = require("@utils/helper");
 const createError = require("http-errors");
-const { createEventSchema, getEventSchema, updateEventSchema, deleteEventSchema } = require("@validation-schemas/EventSchema");
+const { createEventSchema, getEventSchema, updateEventSchema, deleteEventSchema,eventEnroleSchema } = require("@validation-schemas/EventSchema");
 const fs = require("fs");
 const path = require("path");
 const Op = require('sequelize').Op;
@@ -51,7 +51,21 @@ class EventController {
             });
             var data = []
 
-            event.forEach((element) => {
+
+            for (let index = 0; index < event.length; index++) {
+                const element = event[index];
+
+                //TODO:check login user enrole or not
+                const check_enrole = await EventEnrole.findOne({
+                    where: {
+                        user_id: user_id,
+                        event_list_id: element.id
+                    },
+                });
+                //TODO:check login user enrole or not
+
+                const is_enroled = check_enrole ? true : false;
+
                 const record = {
                     id: encrypt(element.id),
                     schools: {
@@ -63,10 +77,11 @@ class EventController {
                     image: element.imageUrl(element.event_image),
                     description: element.description,
                     date: element.date,
+                    is_enroled: is_enroled,
 
                 };
                 data.push(record);
-            });
+            }
 
             res.json(Helper.successResponse(data, "success"));
         } catch (error) {
@@ -188,11 +203,11 @@ class EventController {
             const result = await updateEventSchema.validateAsync(req.body);
             const school_id = decrypt(result.school_id);
             const grad = result.grad;
-            const event_id = decrypt(result.event_id);
+            const event_list_id = decrypt(result.event_list_id);
 
             const event = await Event.findOne({
                 where: {
-                    id: event_id,
+                    id: event_list_id,
                 },
             });
 
@@ -202,7 +217,7 @@ class EventController {
             * check title already exist or not
             */
             const title = await Event.findOne({
-                where: { id: { [Op.ne]: event_id }, title: result.title }
+                where: { id: { [Op.ne]: event_list_id }, title: result.title }
             });
 
             if (title) throw createError.Conflict("Already this event exists");
@@ -239,11 +254,11 @@ class EventController {
         try {
 
             const result = await deleteEventSchema.validateAsync(req.body);
-            const event_id = decrypt(result.event_id);
+            const event_list_id = decrypt(result.event_list_id);
 
             const event = await Event.findOne({
                 where: {
-                    id: event_id
+                    id: event_list_id
                 },
             });
 
@@ -257,6 +272,69 @@ class EventController {
 
             res.status(201).json(
                 Helper.successResponse([], "Success")
+            );
+        } catch (error) {
+            if (error.isJoi == true) error.status = 422;
+            next(error);
+        }
+    };
+
+    /**
+  * enrole event
+  * @param {*} req
+  * @param {*} res
+  * @param {*} next
+  */
+    static eventEnrole = async (req, res, next) => {
+        try {
+            const token_info = await Helper.tokenInfo(req.headers["authorization"]); // Get token through helper funtion
+            const user_id = decrypt(token_info.audience);
+
+            const result = await eventEnroleSchema.validateAsync(req.body);
+            const event_list_id = decrypt(result.event_list_id);
+
+            /**
+             * TODO: when enrole is true add enrole, otherwise delete enrole
+             */
+            if (result.enrole) {
+                const checkEnrole = await EventEnrole.findOne({
+                    where: {
+                        user_id: user_id,
+                        event_list_id: event_list_id
+                    },
+                });
+                if (checkEnrole) throw createError.Conflict("Already enroled this event");
+
+                var enrole = await EventEnrole.create({
+                    user_id: user_id,
+                    event_list_id: event_list_id,
+                });
+                var message = "Enroled successfull";
+            }
+            else {
+                const checkEnrole = await EventEnrole.findOne({
+                    where: {
+                        user_id: user_id,
+                        event_list_id: event_list_id
+                    },
+                });
+                if (checkEnrole == null) throw createError.Conflict("Already enrole removed this event");
+
+
+                const enrole = await EventEnrole.findOne({
+                    where: {
+                        user_id: user_id,
+                        event_list_id: event_list_id
+                    },
+                });
+                var bookmark = await enrole.destroy();
+                var message = "Event enrole is removed";
+            }
+
+            if (!bookmark) throw createError.InternalServerError();
+
+            res.status(201).json(
+                Helper.successResponse([], message)
             );
         } catch (error) {
             if (error.isJoi == true) error.status = 422;

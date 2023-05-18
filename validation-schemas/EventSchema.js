@@ -45,10 +45,10 @@ const updateEventSchema = Joi.object({
         "string.empty": "Grad is not allowed to be empty",
         "any.required": "Grad is a required field",
     }),
-    event_id: Joi.string().required().messages({
-        "string.base": "Event ID should be a type of string",
-        "string.empty": "Event ID is not allowed to be empty",
-        "any.required": "Event ID is a required field",
+    event_list_id: Joi.string().required().messages({
+        "string.base": "Event List ID should be a type of string",
+        "string.empty": "Event List ID is not allowed to be empty",
+        "any.required": "Event List ID is a required field",
     }),
     title: Joi.string().trim().required().max(255).messages({
         "string.base": "Title should be a type of string",
@@ -86,17 +86,34 @@ const getEventSchema = Joi.object({
  * delete Event
  */
 const deleteEventSchema = Joi.object({
-    event_id: Joi.string().required().messages({
+    event_list_id: Joi.string().required().messages({
         "string.base": "Event ID should be a type of string",
         "string.empty": "Event ID is not allowed to be empty",
         "any.required": "Event ID is a required field",
     })
 });
 
+
+/**
+ * enrole Event
+ */
+const eventEnroleSchema = Joi.object({
+    event_list_id: Joi.string().required().messages({
+        "string.base": "Event ID should be a type of string",
+        "string.empty": "Event ID is not allowed to be empty",
+        "any.required": "Event ID is a required field",
+    }),
+    enrole: Joi.boolean().required().messages({
+        "boolean.base": "Enrole should be a type of boolean",
+        "boolean.empty": "Enrole is not allowed to be empty",
+        "boolean.required": "Enrole  is a required field",
+    }),
+});
 // Export this module
 module.exports = {
     createEventSchema,
     updateEventSchema,
     deleteEventSchema,
-    getEventSchema
+    getEventSchema,
+    eventEnroleSchema
 };

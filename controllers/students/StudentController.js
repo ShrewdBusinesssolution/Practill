@@ -116,7 +116,8 @@ class StudentController {
                         grad: result.grad,
                         school_id: school_id,
                         school_name: result.school_name,
-                        profile_image: profile_image
+                        profile_image: profile_image,
+                        address: result.address,
                     });
                     
                     if (!update_student) throw createError.InternalServerError();

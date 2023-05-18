@@ -25,6 +25,8 @@ router.post("/write-answer", QuestionController.storeStudentAnswer);
 router.get("/profile", StudentController.profile);
 router.post("/my-activity", StudentController.myActivity);
 router.post("/event-details", EventController.coachEvent);
+router.post("/event-enrole", EventController.eventEnrole);
+
 
 
 

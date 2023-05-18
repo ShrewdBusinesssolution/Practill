@@ -109,7 +109,8 @@ class CoachController {
                 name: result.name,
                 mobile_number: parseInt(result.mobile_number),
                 email: result.email,
-                profile_image: profile_image
+                profile_image: profile_image,
+                address: result.address,
             });
 
             if (!update_coach) throw createError.InternalServerError();
